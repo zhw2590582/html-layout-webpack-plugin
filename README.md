@@ -30,7 +30,7 @@ module.exports = {
       filename: "index.html",
       template: "./index.html"
     }),
-    // 传入对应用到的key值和对应的目录路径，key值名称和数量并无限制
+    // 传入对应用到的key值和对应的目录路径，key值名称和数量并无限制
     new HtmlLayoutWebpackPlugin({
       include: path.resolve("./includes"),
       layout: path.resolve("./layouts")
