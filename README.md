@@ -1,6 +1,6 @@
 # html-layout-webpack-plugin
 
-> webpack html layout plugin
+> webpack html 布局插件，适用于html模块化引用和多布局引用
 
 ## Install
 
@@ -15,80 +15,67 @@ $ npm i -D html-layout-webpack-plugin
 ```js
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
-const SimpleI18nWebpackPlugin = require('html-layout-webpack-plugin');
+const HtmlLayoutWebpackPlugin = require('html-layout-webpack-plugin');
 const isProd = process.env.NODE_ENV === 'production';
 
-// 定义语言种类和地址
-const languages = {
-  zh: path.resolve('./languages/zh.json'),
-  en: path.resolve('./languages/en.json')
-};
-
-// 返回webpack配置数组
-module.exports = Object.keys(languages).map(function(language) {
-  return {
-    name: language,
-    mode: isProd ? 'production' : 'development',
-    entry: './index.js',
-    output: {
-      path: __dirname + '/dist',
-      filename: 'index_bundle.js'
-    },
-    plugins: [
-      new HtmlWebpackPlugin({
-        filename: language === 'zh' ? 'index.html' : language + '/index.html',
-        template: './index.html'
-      }),
-      new SimpleI18nWebpackPlugin({
-        language: languages[language], // 语言路径，必填
-        pattern: /_\((.*?)\)/gi, // 替换正则，选填
-        unmatch: 'Not Found' // 不匹配时的提示文本，选填
-      })
-    ]
-  };
-});
-```
-
-#### languages/zh.json
-
-```json
-{
-  "title": "标题",
-  "object": {
-    "object": {
-      "object": "对象深度"
-    }
-  },
-  "array": [[["数组深度"]]]
+module.exports = {
+	mode: isProd ? "production" : "development",
+	entry: "./index.js",
+	output: {
+		path: __dirname + "/dist",
+		filename: "index_bundle.js"
+	},
+	plugins: [
+		new HtmlWebpackPlugin({
+			filename: "index.html",
+			template: "./index.html"
+    }),
+    // 传入对应用到的key值和对应的目录路径，key值名称和数量并无限制
+		new HtmlLayoutWebpackPlugin({
+			include: path.resolve('./includes'),
+			layout: path.resolve('./layouts')
+		})
+	]
 }
 ```
 
-#### languages/en.json
+#### index.html
 
-```json
-{
-  "title": "title",
-  "object": {
-    "object": {
-      "object": "object depth"
-    }
-  },
-  "array": [[["array depth"]]]
-}
-```
-
-#### src/index.html
-
+引用一个布局
 ```html
-<p>_(title)</p>
-<p>_(object)</p>
-<p>_(object.object)</p>
-<p>_(object.object.object)</p>
-<p>_(array)</p>
-<p>_(array.0)</p>
-<p>_(array.0.0)</p>
-<p>_(array.0.0.0)</p>
-<p>_(undefined)</p>
+<!-- @layout:default -->
+<div class="content">
+    content
+</div>
+```
+
+#### layouts/default.html
+
+定义一个布局，其中 slot = true 为内容分发，即被引用的本身数据
+```html
+<!-- @include:header -->
+<!-- @slot:true -->
+<!-- @include:footer -->
+```
+
+#### includes/header.html
+
+定义一个页头组件
+```html
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>html-layout-webpack-plugin</title>
+    </head>
+    <body>
+```
+
+#### includes/footer.html
+
+定义一个页脚组件
+```html
+    </body>
+</html>
 ```
 
 ## Output
@@ -96,29 +83,18 @@ module.exports = Object.keys(languages).map(function(language) {
 #### dist/index.html
 
 ```html
-<p>标题</p>
-<p>{ object: { object: 对象深度 } }</p>
-<p>{ object: 对象深度 }</p>
-<p>对象深度</p>
-<p>[[[数组深度]]]</p>
-<p>[[数组深度]]</p>
-<p>[数组深度]</p>
-<p>数组深度</p>
-<p>Not Found[undefined]</p>
-```
-
-#### dist/en/index.html
-
-```html
-<p>title</p>
-<p>{ object: { object: object depth } }</p>
-<p>{ object: object depth }</p>
-<p>object depth</p>
-<p>[[[array depth]]]</p>
-<p>[[array depth]]</p>
-<p>[array depth]</p>
-<p>array depth</p>
-<p>Not Found[undefined]</p>
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>html-layout-webpack-plugin</title>
+    </head>
+    <body>
+      <div class="content">
+          content
+      </div>
+      <script type="text/javascript" src="index_bundle.js"></script>
+    </body>
+</html>
 ```
 
 ## License
